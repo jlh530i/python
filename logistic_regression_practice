@@ -1,0 +1,52 @@
+#Logistic regression in Python
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+import pylab as pl
+
+#import data
+df = pd.read_csv("http://www.ats.ucla.edu/stat/data/binary.csv")
+
+#change column names
+df.columns = ["admit", "gre", "gpa", "prestige"]
+
+#describe data
+df.describe()
+
+#standard deviation of each column
+df.std()
+
+#create crosstab
+pd.crosstab(df['admit'],df['prestige'],rownames=['admit'])
+
+#plot 
+df.hist()
+pl.show()
+
+#create dummy ranking for prestige
+dummy_ranks = pd.get_dummies(df['prestige'],prefix='prestige')
+
+# create final dataframe with dummy variable for prestige
+cols = ['admit','gre','gpa']
+data = df[cols].join(dummy_ranks.ix[:,'prestige_2':])
+
+# manually add intercept
+data['intercept'] = 1.0
+
+#begin regression
+train_cols = data.columns[1:]
+
+logit = sm.Logit(data['admit'], data[train_cols])
+
+#fit model
+result = logit.fit()
+
+#print results of model
+result.summary()
+
+#odds ratio
+np.exp(result.params)
+
+#confidence interval
+result.conf_int()
+
